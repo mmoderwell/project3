@@ -4,6 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<title>CS 396 | Project 3</title>
+	<link rel="stylesheet" type="text/css" href="style.css">
 	<!-- Load d3.js -->
 	<script src="d3.min.js"></script>
 	<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
@@ -11,7 +12,10 @@
 </head>
 
 <body>
-	<!-- Create an element where the map will take place -->
-	<svg id="my_dataviz" width="800" height="600"></svg>
+	<div class="container">
+		<!-- Create an element where the map will take place -->
+		<div id="chloropleth" width="800" height="600"></div>
+		<div id="scatterplot"></div>
+	</div>
 	<script src="main.js" type="text/javascript"></script>
 </body>

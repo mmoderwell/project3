@@ -1,0 +1,96 @@
+{
+	"ZCTA": "Geography",
+	"STATE": "Geography",
+	"AGE AND SEX":
+	{
+		"S0101_C01_001E": "Estimate!!Total!!Total population",
+		"S0101_C01_032E": "Estimate!!Total!!Total population!!SUMMARY INDICATORS!!Median age(years)",
+		"S0101_C01_033E": "Estimate!!Total!!Total population!!SUMMARY INDICATORS!!Sex ratio(males per 100 females)",
+		"S0101_C01_034E": "Estimate!!Total!!Total population!!SUMMARY INDICATORS!!Age dependency ratio",
+		"S0101_C02_001E": "Estimate!!Percent!!Total population",
+		"S0101_C04_028E": "Estimate!!Percent Male!!Total population!!SELECTED AGE CATEGORIES!!60 years and over",
+	},
+	"HOUSEHOLDS AND FAMILIES":
+	{
+		"S1101_C02_009E": "Estimate!!Married - couple family household!!Total households",
+		"S1101_C02_004E": "Estimate!!Married - couple family household!!FAMILIES!!Average family size",
+		"S1101_C02_003E": "Estimate!!Married - couple family household!!FAMILIES!!Total families",
+		"S1101_C02_002E": "Estimate!!Married - couple family household!!HOUSEHOLDS!!Average household size",
+		"S1101_C05_004E": "Estimate!!Nonfamily household!!FAMILIES!!Average family size",
+		"S1101_C05_002E": "Estimate!!Nonfamily household!!HOUSEHOLDS!!Average household size",
+		"S1101_C05_001E": "Estimate!!Nonfamily household!!HOUSEHOLDS!!Total households",
+		"S1101_C05_009E": "Estimate!!Nonfamily household!!Total households"
+	},
+	"EDUCATIONAL ATTAINMENT":
+	{
+		"S1501_C01_001E": "Estimate!!Total!!Population 18 to 24 years",
+		"S1501_C02_001E": "Estimate!!Percent!!Population 18 to 24 years",
+		"S1501_C02_007E": "Estimate!!Percent!!Population 25 years and over!!Less than 9 th grade",
+		"S1501_C02_008E": "Estimate!!Percent!!Population 25 years and over!!9 th to 12 th grade no diploma",
+		"S1501_C02_009E": "Estimate!!Percent!!Population 25 years and over!!High school graduate(includes equivalency)",
+		"S1501_C02_010E": "Estimate!!Percent!!Population 25 years and over!!Some college no degree",
+		"S1501_C02_012E": "Estimate!!Percent!!Population 25 years and over!!Bachelor 's degree",
+		"S1501_C02_013E": "Estimate!!Percent!!Population 25 years and over!!Graduate or professional degree",
+		"S1501_C02_015E": "Estimate!!Percent!!Population 25 years and over!!Percent bachelor 's degree or higher",
+	},
+	"INCOME IN THE PAST 12 MONTHS (IN 2017 INFLATION-ADJUSTED DOLLARS)":
+	{
+		"S1901_C01_001E": "Estimate!!Households!!Total",
+		"S1901_C01_012E": "Estimate!!Households!!Median income(dollars)",
+		"S1901_C01_013E": "Estimate!!Households!!Mean income(dollars)",
+		"S1901_C02_001E": "Estimate!!Families!!Total",
+		"S1901_C02_002E": "Estimate!!Families!!Total!!Less than $10 000",
+		"S1901_C02_003E": "Estimate!!Families!!Total!!$10 000 to $14 999",
+		"S1901_C02_004E": "Estimate!!Families!!Total!!$15 000 to $24 999",
+		"S1901_C02_005E": "Estimate!!Families!!Total!!$25 000 to $34 999",
+		"S1901_C02_006E": "Estimate!!Families!!Total!!$35 000 to $49 999",
+		"S1901_C02_007E": "Estimate!!Families!!Total!!$50 000 to $74 999",
+		"S1901_C02_008E": "Estimate!!Families!!Total!!$75 000 to $99 999",
+		"S1901_C02_009E": "Estimate!!Families!!Total!!$100 000 to $149 999",
+		"S1901_C02_010E": "Estimate!!Families!!Total!!$150 000 to $199 999",
+		"S1901_C02_011E": "Estimate!!Families!!Total!!$200 000 or more",
+		"S1901_C02_012E": "Estimate!!Families!!Median income(dollars)",
+		"S1901_C02_013E": "Estimate!!Families!!Mean income(dollars)",
+		"S1901_C03_001E": "Estimate!!Married - couple families!!Total",
+		"S1901_C04_001E": "Estimate!!Nonfamily households!!Total",
+
+		"S1901_C01_002E": "Estimate!!Households!!Total!!Less than $10 000",
+		"S1901_C01_003E": "Estimate!!Households!!Total!!$10 000 to $14 999",
+		"S1901_C01_004E": "Estimate!!Households!!Total!!$15 000 to $24 999",
+		"S1901_C01_005E": "Estimate!!Households!!Total!!$25 000 to $34 999",
+		"S1901_C01_006E": "Estimate!!Households!!Total!!$35 000 to $49 999",
+		"S1901_C01_007E": "Estimate!!Households!!Total!!$50 000 to $74 999",
+		"S1901_C01_008E": "Estimate!!Households!!Total!!$75 000 to $99 999",
+		"S1901_C01_009E": "Estimate!!Households!!Total!!$100 000 to $149 999",
+		"S1901_C01_010E": "Estimate!!Households!!Total!!$150 000 to $199 999",
+		"S1901_C01_011E": "Estimate!!Households!!Total!!$200 000 or more"
+	},
+	"TYPES OF COMPUTERS AND INTERNET SUBSCRIPTIONS":
+	{
+		"S2801_C02_001E": "Estimate!!Percent!!Total households",
+		"S2801_C02_002E": "Estimate!!Percent!!TYPES OF COMPUTER!!Has one or more types of computing devices",
+		"S2801_C02_011E": "Estimate!!Percent!!TYPES OF COMPUTER!!No computer",
+		"S2801_C02_012E": "Estimate!!Percent!!TYPE OF INTERNET SUBSCRIPTIONS!!With an Internet subscription",
+		"S2801_C02_013E": "Estimate!!Percent!!TYPE OF INTERNET SUBSCRIPTIONS!!With an Internet subscription!!Dial - up with no other type of Internet subscription",
+		"S2801_C02_015E": "Estimate!!Percent!!TYPE OF INTERNET SUBSCRIPTIONS!!With an Internet subscription!!Broadband of any type!!Cellular data plan",
+		"S2801_C02_019E": "Estimate!!Percent!!TYPE OF INTERNET SUBSCRIPTIONS!!Without an Internet subscription",
+		"S2801_C02_020E": "Estimate!!Percent!!TYPE OF INTERNET SUBSCRIPTIONS!!Less than $20 000",
+		"S2801_C02_024E": "Estimate!!Percent!!TYPE OF INTERNET SUBSCRIPTIONS!!$20 000 to $74 999",
+		"S2801_C02_028E": "Estimate!!Percent!!TYPE OF INTERNET SUBSCRIPTIONS!!$75 000 or more"
+	},
+	"LANGUAGE SPOKEN AT HOME":
+	{
+		"S1601_C02_002E": "Estimate!!Percent!!Population 5 years and over!!Speak only English"
+	},
+	"EMPLOYMENT STATUS":
+	{
+		"S2301_C03_001E": "Estimate!!Employment/Population Ratio!!Population 16 years and over",
+		"S2301_C04_001E": "Estimate!!Unemployment rate!!Population 16 years and over"
+	},
+	"OCCUPANCY CHARACTERISTICS":
+	{
+		"S2501_C01_001E": "Estimate!!Occupied housing units!!Occupied housing units",
+		"S2501_C02_001E": "Estimate!!Percent occupied housing units!!Occupied housing units",
+		"S2501_C05_001E": "Estimate!!Renter-occupied housing units!!Occupied housing units"
+	}
+}

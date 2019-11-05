@@ -1,0 +1,14 @@
+.container {
+	margin: 0 auto;
+	display: flex;
+	flex-direction: column;
+	position: relative;
+	max-width: 44em;
+}
+
+.svg_content {
+	display: inline-block;
+	position: relative;
+	top: 10px;
+	left: 0;
+}
