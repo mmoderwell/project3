@@ -5,10 +5,10 @@ var svg = d3.select("svg"),
 
 // Map and projection
 var path = d3.geoPath();
-var projection = d3.geoMercator()
-	.scale(70)
-	.center([0, 20])
-	.translate([width / 2, height / 2]);
+// D3 Projection
+var projection = d3.geoAlbersUsa()
+	.translate([width / 2, height / 2]) // translate to center of screen
+	.scale([1000]); // scale things down so see entire US
 
 // Data and color scale
 var data = d3.map();
@@ -18,17 +18,16 @@ var colorScale = d3.scaleThreshold()
 
 
 let promises = [];
-
-promises.push(d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson"));
-promises.push(d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world_population.csv"));
+promises.push(d3.json("http://localhost:2000/counties"));
+// promises.push(d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world_population.csv"));
 
 
 Promise.all(promises).then(function (values) {
-	// console.log(values);
+	console.log(values);
 	ready(null, values[0]);
 });
 
-function ready(error, topo) {
+function ready(error, geo) {
 
 	let mouseOver = function (d) {
 		d3.selectAll(".Country")
@@ -56,21 +55,22 @@ function ready(error, topo) {
 	// Draw the map
 	svg.append("g")
 		.selectAll("path")
-		.data(topo.features)
+		.data(geo.features)
 		.enter()
 		.append("path")
 		// draw each country
 		.attr("d", d3.geoPath()
 			.projection(projection)
 		)
-		// set the color of each country
+		// // set the color of each county
 		.attr("fill", function (d) {
-			d.total = data.get(d.id) || 0;
-			return colorScale(d.total);
+			// d.total = data.get(d.id) || 0;
+			return "#ADB7C7";
 		})
-		.style("stroke", "transparent")
-		.attr("class", function (d) { return "Country" })
+		.style("stroke", "white")
+		.style("stroke-width", 0.5)
+		.attr("class", function (d) { return "county" })
 		.style("opacity", .8)
-		.on("mouseover", mouseOver)
-		.on("mouseleave", mouseLeave)
+	// .on("mouseover", mouseOver)
+	// .on("mouseleave", mouseLeave)
 }

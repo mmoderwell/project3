@@ -11,9 +11,9 @@ app.use((req, res, next) => {
 	next();
 });
 
-app.get('/flowers', (req, res, next) => {
+app.get('/counties', (req, res, next) => {
 	// res.sendFile('flowers.csv');
-	let file_path = path.join(__dirname, '/data', 'flowers.csv');
+	let file_path = path.join(__dirname, '/data', 'counties.json');
 	const contents = fs.readFileSync(file_path, 'utf8');
 	res.send(contents);
 });
