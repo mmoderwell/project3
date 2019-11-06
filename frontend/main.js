@@ -6,14 +6,10 @@ const margin = ({ top: 40, right: 40, bottom: 40, left: 40 });
 
 // Data and color scale
 let data = d3.map();
-let data2 = [];
+let data_array = [];
 
 let map_svg;
 let scatter_svg;
-
-// let colorScale = d3.scaleThreshold()
-// 	.domain([0, 100, 1000, 100000, 1000000])
-// 	.range(d3.schemeBlues[5]);
 
 
 let promises = [];
@@ -22,7 +18,7 @@ promises.push(d3.csv("http://localhost:2000/data", (d) => {
 	let fips = String(d.state) + String(d.county);
 	data.set(fips, { population: +d.population, income: +d.median_income });
 
-	data2.push({ fips: fips, population: +d.population, income: +d.median_income })
+	data_array.push({ fips: fips, population: +d.population, income: +d.median_income })
 }));
 
 function colorize(min, max, value) {
@@ -38,17 +34,12 @@ function colorize(min, max, value) {
 
 function map(error, geo) {
 
-	// Map and projection
 	let path = d3.geoPath();
 	// D3 Projection
 	let projection = d3.geoAlbersUsa()
-		.translate([width / 2, height / 2]) // translate to center of screen
-		.scale([600]); // scale things down so see entire US
+		.translate([width / 2, height / 2])
+		.scale([600]); // scale things down
 
-	// let max = d3.max(data);
-	// let min = d3.min(data);
-
-	// console.log(max, min)
 	map_svg = d3.select('#chloropleth')
 		.append('svg')
 		.attr("preserveAspectRatio", "xMinYMin meet")
@@ -72,21 +63,19 @@ function map(error, geo) {
 			.projection(projection)
 		)
 		// // set the color of each county
-		.attr("fill", function (d) {
+		.attr("fill", (d) => {
 			// d.total = data.get(d.id) || 0;
 			let fips = String(d.properties.STATEFP) + String(d.properties.COUNTYFP);
+
 			d.population = data.get(fips).population || 0;
 			d.income = data.get(fips).income || 0;
 
 			return colorize(0, 1500000, d.population);
-			// return colorScale(d.population);
 		})
 		.style("stroke", "white")
 		.style("stroke-width", 0.5)
 		.attr("class", d => "county")
-		.style("opacity", .8)
-	// .on("mouseover", mouseOver)
-	// .on("mouseleave", mouseLeave)
+		.style("opacity", .8);
 }
 
 
@@ -95,11 +84,11 @@ function scatterplot() {
 	let width = 600;
 
 	let x = d3.scaleLinear()
-		.domain(d3.extent(data2, d => d.population)).nice()
+		.domain(d3.extent(data_array, d => d.population)).nice()
 		.range([margin.left, width - margin.right]);
 
 	let y = d3.scaleLinear()
-		.domain(d3.extent(data2, d => d.income)).nice()
+		.domain(d3.extent(data_array, d => d.income)).nice()
 		.range([height - margin.bottom, margin.top]);
 
 	let xAxis = g => g
@@ -112,7 +101,7 @@ function scatterplot() {
 			.attr("fill", "#000")
 			.attr("font-weight", "bold")
 			.attr("text-anchor", "end")
-			.text("Population"))
+			.text("Population"));
 
 	let yAxis = g => g
 		.attr("transform", `translate(${margin.left},0)`)
@@ -148,43 +137,55 @@ function scatterplot() {
 
 	const dot = scatter_svg.append("g")
 		.attr("fill", "steelblue")
-		.attr("opacity", 0.5)
-		.attr("stroke", "steelblue")
 		.attr("stroke-width", 1)
 		.selectAll("g")
-		.data(data2)
+		.data(data_array)
 		.join("circle")
 		.attr("transform", d => `translate(${x(d.population)},${y(d.income)})`)
-		.attr("r", 1.5);
+		.attr("r", 2.5)
+		.attr("fill-opacity", 0.5);
 
 	scatter_svg.call(brush);
 
 	function brushed() {
-		let value = [];
+		let clearing = false;
 		if (d3.event.selection) {
 			const [
 				[x0, y0],
 				[x1, y1]
 			] = d3.event.selection;
 
-			value = data2.filter((d, i) => {
+			if (x0 === x1 || y0 === y1) {
+				clearing = true;
+			}
+
+			data_array.forEach((d, i) => {
 				let val = x0 <= x(d.population) && x(d.population) < x1 && y0 <= y(d.income) && y(d.income) < y1;
-				if (val) {
-					data2[i].filtered = false;
-				} else {
-					data2[i].filtered = true;
+				// if there was no selection, reset and show all
+				if (clearing) {
+					data_array[i].filtered = false;
+					return
 				}
-				return val;
+				if (val) {
+					data_array[i].filtered = false;
+				} else {
+					data_array[i].filtered = true;
+				}
 			});
 		}
 		// show on the map the selected counties
 		map_svg.selectAll('path')
-			.data(data2)
-			.style('fill', d => { return d.filtered ? '#EEEEEE' : colorize(0, 140000, d.income) })
+			.data(data_array)
+			.style('fill', d => { return d.filtered ? '#EEEEEE' : colorize(0, 140000, d.income) });
+
+		scatter_svg.selectAll('circle')
+			.data(data_array)
+			.style('fill', d => { return d.filtered ? 'steelblue' : '#A54132' });
 
 	}
 }
 
+// pull in all the data and draw it
 Promise.all(promises).then(function (values) {
 	console.log(values);
 	map(null, values[0]);

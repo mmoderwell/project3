@@ -1,14 +1,32 @@
+body {
+	font-family: 'Roboto', sans-serif;
+	color: #222222;
+}
+
 .container {
 	margin: 0 auto;
 	display: flex;
 	flex-direction: column;
 	position: relative;
-	max-width: 44em;
+	max-width: 54em;
 }
 
 .svg_content {
 	display: inline-block;
 	position: relative;
-	top: 10px;
 	left: 0;
+}
+
+#chloropleth {
+	margin: 4em 0;
+	background: #ededed;
+	border-radius: 6px;
+	box-shadow: 6px 2px 18px 6px rgba(158, 158, 158, 0.3);
+}
+
+#scatterplot {
+	margin: 2em 0;
+	background: #fafafa;
+	border-radius: 4px;
+	padding: 2em 2em 0 2em;
 }
