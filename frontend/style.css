@@ -18,8 +18,8 @@ body {
 }
 
 #chloropleth {
-	margin: 4em 0;
-	background: #ededed;
+	margin: 1em 0;
+	background: #f6f6f6;
 	border-radius: 6px;
 	box-shadow: 6px 2px 18px 6px rgba(158, 158, 158, 0.3);
 }
