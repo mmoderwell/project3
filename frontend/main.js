@@ -7,6 +7,8 @@ const margin = ({ top: 40, right: 40, bottom: 40, left: 40 });
 // Data and color scale
 let data = d3.map();
 let data_array = [];
+let data_obj = {}
+let geo;
 
 let map_svg;
 let scatter_svg;
@@ -16,8 +18,7 @@ let promises = [];
 promises.push(d3.json("http://localhost:2000/geo"));
 promises.push(d3.csv("http://localhost:2000/data", (d) => {
 	let fips = String(d.state) + String(d.county);
-	data.set(fips, { population: +d.population, income: +d.median_income });
-
+	data_obj[fips] = { population: +d.population, income: +d.median_income, filtered: false };
 	data_array.push({ fips: fips, population: +d.population, income: +d.median_income })
 }));
 
@@ -32,7 +33,7 @@ function colorize(min, max, value) {
 	if (value <= min + (increment * 5) || value >= max) { return '#08519c' } // also captures outliers
 }
 
-function map(error, geo) {
+function map() {
 
 	let path = d3.geoPath();
 	// D3 Projection
@@ -64,13 +65,8 @@ function map(error, geo) {
 		)
 		// // set the color of each county
 		.attr("fill", (d) => {
-			// d.total = data.get(d.id) || 0;
 			let fips = String(d.properties.STATEFP) + String(d.properties.COUNTYFP);
-
-			d.population = data.get(fips).population || 0;
-			d.income = data.get(fips).income || 0;
-
-			return colorize(0, 1500000, d.population);
+			return colorize(0, 1500000, data_obj[fips].population);
 		})
 		.style("stroke", "white")
 		.style("stroke-width", 0.5)
@@ -84,7 +80,7 @@ function scatterplot() {
 	let width = 600;
 
 	let x = d3.scaleLinear()
-		.domain(d3.extent(data_array, d => d.population)).nice()
+		.domain(d3.extent(data_array, d => d.population))
 		.range([margin.left, width - margin.right]);
 
 	let y = d3.scaleLinear()
@@ -148,13 +144,15 @@ function scatterplot() {
 	scatter_svg.call(brush);
 
 	function brushed() {
-		let clearing = false;
+
 		if (d3.event.selection) {
 			const [
 				[x0, y0],
 				[x1, y1]
 			] = d3.event.selection;
 
+			let clearing = false;
+			// if the brush doesn't contain anything, reset the filtered
 			if (x0 === x1 || y0 === y1) {
 				clearing = true;
 			}
@@ -163,20 +161,25 @@ function scatterplot() {
 				let val = x0 <= x(d.population) && x(d.population) < x1 && y0 <= y(d.income) && y(d.income) < y1;
 				// if there was no selection, reset and show all
 				if (clearing) {
-					data_array[i].filtered = false;
-					return
+					data_obj[d.fips].filtered = false;
+					return;
 				}
 				if (val) {
-					data_array[i].filtered = false;
+					data_obj[d.fips].filtered = false;
 				} else {
-					data_array[i].filtered = true;
+					data_obj[d.fips].filtered = true;
 				}
 			});
 		}
 		// show on the map the selected counties
 		map_svg.selectAll('path')
-			.data(data_array)
-			.style('fill', d => { return d.filtered ? '#EEEEEE' : colorize(0, 140000, d.income) });
+			.data(geo.features)
+			.style('fill', (d) => {
+				let fips = String(d.properties.STATEFP) + String(d.properties.COUNTYFP);
+				let { filtered, population } = data_obj[fips];
+				// return filtered ? '#EEEEEE' : colorize(0, 1000000, population);
+				return filtered ? '#EEEEEE' : '#CD6F6F';
+			});
 
 		scatter_svg.selectAll('circle')
 			.data(data_array)
@@ -187,7 +190,8 @@ function scatterplot() {
 
 // pull in all the data and draw it
 Promise.all(promises).then(function (values) {
-	console.log(values);
-	map(null, values[0]);
+	// console.log(values);
+	geo = values[0];
+	map();
 	scatterplot();
 });
