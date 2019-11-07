@@ -10,7 +10,7 @@ census({
 			// "zip code tabulation area": "*"
 		},
 		"sourcePath": ["acs", "acs5", "subject"], // required 
-		"values": ["S0101_C01_001E", "S1901_C01_012E"] // required 
+		"values": ["S0101_C01_001E", "S1901_C01_012E", "S2801_C02_011E", "S2301_C04_001E", "S0801_C01_046E"] // required 
 	},
 	(err, res) => {
 		console.log(res)

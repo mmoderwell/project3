@@ -17,6 +17,10 @@ body {
 	left: 0;
 }
 
+#subtitle {
+	margin-top: 0;
+}
+
 #chloropleth {
 	margin: 1em 0;
 	background: #f6f6f6;

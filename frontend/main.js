@@ -18,8 +18,17 @@ let promises = [];
 promises.push(d3.json("http://localhost:2000/geo"));
 promises.push(d3.csv("http://localhost:2000/data", (d) => {
 	let fips = String(d.state) + String(d.county);
-	data_obj[fips] = { population: +d.population, income: +d.median_income, filtered: false };
-	data_array.push({ fips: fips, population: +d.population, income: +d.median_income })
+	let data = {
+		population: +d.S0101_C01_001E,
+		income: +d.S1901_C01_012E,
+		filtered: false,
+		median_commute: d.S0801_C01_046E,
+		percent_no_computer: d.S2801_C02_011E,
+		unemployment_rate: d.S2301_C04_001E,
+		fips: fips
+	};
+	data_obj[fips] = data;
+	data_array.push(data);
 }));
 
 function colorize(min, max, value) {
@@ -50,7 +59,7 @@ function map() {
 		.classed("svg_content", true)
 		// .attr('width', width + margin.left + margin.right)
 		// .attr('height', height + margin.top + margin.bottom)
-		.append('g')
+		.append('g');
 	// .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
 
 	// Draw the map
@@ -66,7 +75,7 @@ function map() {
 		// // set the color of each county
 		.attr("fill", (d) => {
 			let fips = String(d.properties.STATEFP) + String(d.properties.COUNTYFP);
-			return colorize(0, 1500000, data_obj[fips].population);
+			return colorize(0, 60, data_obj[fips].median_commute);
 		})
 		.style("stroke", "white")
 		.style("stroke-width", 0.5)
@@ -177,8 +186,8 @@ function scatterplot() {
 			.style('fill', (d) => {
 				let fips = String(d.properties.STATEFP) + String(d.properties.COUNTYFP);
 				let { filtered, population } = data_obj[fips];
-				// return filtered ? '#EEEEEE' : colorize(0, 1000000, population);
-				return filtered ? '#EEEEEE' : '#CD6F6F';
+				return filtered ? '#EEEEEE' : colorize(0, 1000000, population);
+				// return filtered ? '#EEEEEE' : '#CD6F6F';
 			});
 
 		scatter_svg.selectAll('circle')
