@@ -15,8 +15,8 @@ let scatter_svg;
 
 
 let promises = [];
-promises.push(d3.json("http://localhost:2001/api/geo"));
-promises.push(d3.csv("http://localhost:2001/api/data", (d) => {
+promises.push(d3.json("/api/geo"));
+promises.push(d3.csv("/api/data", (d) => {
 	let fips = String(d.state) + String(d.county);
 	let data = {
 		population: +d.S0101_C01_001E,
