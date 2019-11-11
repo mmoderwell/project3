@@ -1,11 +1,9 @@
 const container = document.querySelector('container');
-let width = 600
-let height = 400
+let width = 600;
+let height = 400;
 const margin = ({ top: 40, right: 40, bottom: 40, left: 40 });
 
-
 // Data and color scale
-let data = d3.map();
 let data_array = [];
 let data_obj = {}
 let geo;
@@ -13,6 +11,7 @@ let geo;
 let map_svg;
 let scatter_svg;
 
+let selectedOption = "population";
 
 let promises = [];
 promises.push(d3.json("/api/geo"));
@@ -27,8 +26,12 @@ promises.push(d3.csv("/api/data", (d) => {
 		unemployment_rate: d.S2301_C04_001E,
 		fips: fips
 	};
+	let data2 = {
+		population: +d.S0101_C01_001E,
+		fips: fips
+	};
 	data_obj[fips] = data;
-	data_array.push(data);
+	data_array.push(data2);
 }));
 
 function colorize(min, max, value) {
@@ -42,11 +45,13 @@ function colorize(min, max, value) {
 	if (value <= min + (increment * 5) || value >= max) { return '#08519c' } // also captures outliers
 }
 
+let projection = d3.geoAlbersUsa()
+
 function map() {
 
 	let path = d3.geoPath();
 	// D3 Projection
-	let projection = d3.geoAlbersUsa()
+	projection
 		.translate([width / 2, height / 2])
 		.scale([600]); // scale things down
 
@@ -75,7 +80,7 @@ function map() {
 		// // set the color of each county
 		.attr("fill", (d) => {
 			let fips = String(d.properties.STATEFP) + String(d.properties.COUNTYFP);
-			return colorize(0, 60, data_obj[fips].median_commute);
+			return colorize(d3.min(data_array, d => d[selectedOption]), d3.max(data_array, d => d[selectedOption]), data_obj[fips][selectedOption]);
 		})
 		.style("stroke", "white")
 		.style("stroke-width", 0.5)
@@ -91,12 +96,12 @@ function scatterplot() {
 	var choices = ["population", "income", "median_commute", "percent_no_computer", "unemployment_rate"];
 
 	button = d3.select("#selectButton")
-      .selectAll('myOptions')
-     	.data(choices)
-      .enter()
-    	.append('option')
-      .text(function (d) { return d; }) // text showed in the menu
-      .attr("value", function (d) { return d; }) // corresponding value returned by the button
+		.selectAll('myOptions')
+		.data(choices)
+		.enter()
+		.append('option')
+		.text(function (d) { return d; }) // text showed in the menu
+		.attr("value", function (d) { return d; }) // corresponding value returned by the button
 
 
 	let x = d3.scaleLinear()
@@ -104,7 +109,7 @@ function scatterplot() {
 		.range([margin.left, width - margin.right]);
 
 	let y = d3.scaleLinear()
-		.domain(d3.extent(data_array, d => d.income)).nice()
+		.domain(d3.extent(data_array, d => d[selectedOption])).nice()
 		.range([height - margin.bottom, margin.top]);
 
 	let xAxis = g => g
@@ -121,9 +126,10 @@ function scatterplot() {
 
 	let yAxis = g => g
 		.attr("transform", `translate(${margin.left},0)`)
+		.attr("class", "y axis")
 		.call(d3.axisLeft(y))
-		.call(g => g.select(".domain").remove())
-		
+	// .call(g => g.select(".domain").remove())
+
 	scatter_svg = d3.select('#scatterplot')
 		.append('svg')
 		.attr("preserveAspectRatio", "xMinYMin meet")
@@ -151,8 +157,10 @@ function scatterplot() {
 		.attr("stroke-width", 1)
 		.selectAll("g")
 		.data(data_array)
-		.join("circle")
-		.attr("transform", d => `translate(${x(d.population)},${y(d.income)})`)
+		.enter()
+		.append("circle")
+		.attr("class", "point")
+		.attr("transform", d => `translate(${x(d.population)},${y(d[selectedOption])})`)
 		.attr("r", 2.5)
 		.attr("fill-opacity", 0.5);
 
@@ -173,7 +181,7 @@ function scatterplot() {
 			}
 
 			data_array.forEach((d, i) => {
-				let val = x0 <= x(d.population) && x(d.population) < x1 && y0 <= y(d.value) && y(d.value) < y1;
+				let val = x0 <= x(d.population) && x(d.population) < x1 && y0 <= y(d[selectedOption]) && y(d[selectedOption]) < y1;
 				// if there was no selection, reset and show all
 				if (clearing) {
 					data_obj[d.fips].filtered = false;
@@ -191,59 +199,98 @@ function scatterplot() {
 			.data(geo.features)
 			.style('fill', (d) => {
 				let fips = String(d.properties.STATEFP) + String(d.properties.COUNTYFP);
-				let { filtered, population } = data_obj[fips];
-				return filtered ? '#EEEEEE' : colorize(0, 1000000, population);
-				// return filtered ? '#EEEEEE' : '#CD6F6F';
+				let { filtered } = data_obj[fips];
+				let value = data_obj[fips][selectedOption] || data_obj[fips].population;
+				// console.log(value);
+				// return filtered ? '#EEEEEE' : colorize(d3.min(data_array, d => d[selectedOption]), d3.max(data_array, d => d[selectedOption]), value);
+				return filtered ? '#EEEEEE' : '#CD6F6F';
 			});
 
 		scatter_svg.selectAll('circle')
 			.data(data_array)
 			.style('fill', d => { return d.filtered ? 'steelblue' : '#A54132' });
-
 	}
 
-	function update(selectedGroup) {
-      // Create new data with the selection?
-      var dataFilter = data_array.map(function(d){return {population: d.population, value:d[selectedGroup]} })
+	function update() {
+		// Create new data with the selection?
+		data_array = data_array.map(function (d) { return { population: d.population, [selectedOption]: data_obj[d.fips][selectedOption], fips: d.fips } })
+		// console.log(data_array)
 
-	  y = d3.scaleLinear()
-		.domain(d3.extent(dataFilter, d => d.value)).nice()
-		.range([height - margin.bottom, margin.top]);
+		y = d3.scaleLinear()
+			.domain(d3.extent(data_array, d => d[selectedOption])).nice()
+			.range([height - margin.bottom, margin.top]);
 
-	  yAxis = g => g
-		.attr("transform", `translate(${margin.left},0)`)
-		.call(d3.axisLeft(y))
-		.call(g => g.select(".domain").remove())
+		yAxis = g => g
+			.attr("transform", `translate(${margin.left},0)`)
+			.attr("class", "y axis")
+			.call(d3.axisLeft(y));
 
-	  scatter_svg.append("g")
-		.call(yAxis);
+		scatter_svg.select(".y")
+			.call(yAxis);
+
+		// let circle = scatter_svg.selectAll('g')
+		// circle.data(data_array);
+		// circle.exit().remove();
+		// circle.enter().append("circle")
+		// 	.attr("transform", d => `translate(${x(d.population)},${y(d[selectedOption])})`)
+		// 	.attr("r", 2.5)
+		// 	.attr("fill-opacity", 0.5);
+
+		// dot = scatter_svg.append("g")
+		// axisLeft	.attr("fill", "steelblue")
+		// 	.attr("stroke-width", 1)
+		// 	.selectAll("g")
+		// 	.data(dataFilter)
+		// 	.join("circle")
+		// 	.attr("transform", d => `translate(${x(d.population)},${y(d[selectedOption])})`)
+		// 	.attr("r", 2.5)
+		// 	.attr("fill-opacity", 0.5);
+
+		scatter_svg.selectAll('g').selectAll('.point').remove();
+
+		dot = scatter_svg.append("g")
+			.attr("fill", "steelblue")
+			.attr("stroke-width", 1)
+			.selectAll("g")
+			.data(data_array)
+			.enter()
+			.append("circle")
+			.attr("class", "point")
+			.attr("transform", d => `translate(${x(d.population)},${y(d[selectedOption])})`)
+			.attr("r", 2.5)
+			.attr("fill-opacity", 0.5);
 
 
-	  dot = scatter_svg.append("g")
-		.attr("fill", "steelblue")
-		.attr("stroke-width", 1)
-		.selectAll("g")
-		.data(dataFilter)
-		.join("circle")
-		.attr("transform", d => `translate(${x(d.population)},${y(d.value)})`)
-		.attr("r", 2.5)
-		.attr("fill-opacity", 0.5);
 
-
-
-    }
+		// update the map
+		map_svg.append("g")
+			.selectAll("path")
+			.data(geo.features).exit().remove()
+			.enter()
+			.append("path")
+			// draw each county
+			.attr("d", d3.geoPath()
+				.projection(projection)
+			)
+			// // set the color of each county
+			.attr("fill", (d) => {
+				let fips = String(d.properties.STATEFP) + String(d.properties.COUNTYFP);
+				return colorize(d3.min(data_array, d => d[selectedOption]), d3.max(data_array, d => d[selectedOption]), data_obj[fips][selectedOption]);
+			})
+			.style("stroke", "white")
+			.style("stroke-width", 0.5)
+			.attr("class", d => "county")
+			.style("opacity", .8);
+	}
 
 	// When the button is changed, run the updateChart function
-	d3.select("#selectButton").on("change", function(d) {
-	    // recover the option that has been chosen
-	    var selectedOption = d3.select(this).property("value")
-	    // run the updateChart function with this selected option
-	    update(selectedOption)
-	})
+	d3.select("#selectButton").on("change", function (d) {
+		// recover the option that has been chosen
+		selectedOption = d3.select(this).property("value")
+		// run the updateChart function with this selected option
+		update(selectedOption);
+	});
 }
-
-
-
 
 // pull in all the data and draw it
 Promise.all(promises).then(function (values) {
