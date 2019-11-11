@@ -68,7 +68,7 @@ function map() {
 		.data(geo.features)
 		.enter()
 		.append("path")
-		// draw each country
+		// draw each county
 		.attr("d", d3.geoPath()
 			.projection(projection)
 		)
@@ -87,6 +87,17 @@ function map() {
 function scatterplot() {
 	let height = 400;
 	let width = 600;
+
+	var choices = ["population", "income", "median_commute", "percent_no_computer", "unemployment_rate"];
+
+	button = d3.select("#selectButton")
+      .selectAll('myOptions')
+     	.data(choices)
+      .enter()
+    	.append('option')
+      .text(function (d) { return d; }) // text showed in the menu
+      .attr("value", function (d) { return d; }) // corresponding value returned by the button
+
 
 	let x = d3.scaleLinear()
 		.domain(d3.extent(data_array, d => d.population))
@@ -112,12 +123,7 @@ function scatterplot() {
 		.attr("transform", `translate(${margin.left},0)`)
 		.call(d3.axisLeft(y))
 		.call(g => g.select(".domain").remove())
-		.call(g => g.select(".tick:last-of-type text").clone()
-			.attr("y", -20)
-			.attr("text-anchor", "start")
-			.attr("font-weight", "bold")
-			.text("Income"));
-
+		
 	scatter_svg = d3.select('#scatterplot')
 		.append('svg')
 		.attr("preserveAspectRatio", "xMinYMin meet")
@@ -140,7 +146,7 @@ function scatterplot() {
 	scatter_svg.append("g")
 		.call(yAxis);
 
-	const dot = scatter_svg.append("g")
+	var dot = scatter_svg.append("g")
 		.attr("fill", "steelblue")
 		.attr("stroke-width", 1)
 		.selectAll("g")
@@ -167,7 +173,7 @@ function scatterplot() {
 			}
 
 			data_array.forEach((d, i) => {
-				let val = x0 <= x(d.population) && x(d.population) < x1 && y0 <= y(d.income) && y(d.income) < y1;
+				let val = x0 <= x(d.population) && x(d.population) < x1 && y0 <= y(d.value) && y(d.value) < y1;
 				// if there was no selection, reset and show all
 				if (clearing) {
 					data_obj[d.fips].filtered = false;
@@ -195,7 +201,49 @@ function scatterplot() {
 			.style('fill', d => { return d.filtered ? 'steelblue' : '#A54132' });
 
 	}
+
+	function update(selectedGroup) {
+      // Create new data with the selection?
+      var dataFilter = data_array.map(function(d){return {population: d.population, value:d[selectedGroup]} })
+
+	  y = d3.scaleLinear()
+		.domain(d3.extent(dataFilter, d => d.value)).nice()
+		.range([height - margin.bottom, margin.top]);
+
+	  yAxis = g => g
+		.attr("transform", `translate(${margin.left},0)`)
+		.call(d3.axisLeft(y))
+		.call(g => g.select(".domain").remove())
+
+	  scatter_svg.append("g")
+		.call(yAxis);
+
+
+	  dot = scatter_svg.append("g")
+		.attr("fill", "steelblue")
+		.attr("stroke-width", 1)
+		.selectAll("g")
+		.data(dataFilter)
+		.join("circle")
+		.attr("transform", d => `translate(${x(d.population)},${y(d.value)})`)
+		.attr("r", 2.5)
+		.attr("fill-opacity", 0.5);
+
+
+
+    }
+
+	// When the button is changed, run the updateChart function
+	d3.select("#selectButton").on("change", function(d) {
+	    // recover the option that has been chosen
+	    var selectedOption = d3.select(this).property("value")
+	    // run the updateChart function with this selected option
+	    update(selectedOption)
+	})
 }
+
+
+
 
 // pull in all the data and draw it
 Promise.all(promises).then(function (values) {
