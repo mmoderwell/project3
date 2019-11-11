@@ -208,7 +208,7 @@ function scatterplot() {
 
 		scatter_svg.selectAll('circle')
 			.data(data_array)
-			.style('fill', d => { return d.filtered ? 'steelblue' : '#A54132' });
+			.style('fill', d => { return data_obj[d.fips].filtered ? 'steelblue' : '#A54132' });
 	}
 
 	function update() {
