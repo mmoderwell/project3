@@ -1,7 +1,7 @@
 const container = document.querySelector('container');
 let width = 600;
 let height = 400;
-const margin = ({ top: 40, right: 40, bottom: 40, left: 40 });
+const margin = ({ top: 40, right: 40, bottom: 40, left: 60 });
 
 // Data and color scale
 let data_array = [];
@@ -11,7 +11,13 @@ let geo;
 let map_svg;
 let scatter_svg;
 
-let selectedOption = "population";
+let show_all = true;
+
+let selectedOption = "income"; // on the y axis
+let selectedOption2 = "population"; // on the x
+
+let t = d3.transition()
+	.duration(500)
 
 let promises = [];
 promises.push(d3.json("/api/geo"));
@@ -21,27 +27,24 @@ promises.push(d3.csv("/api/data", (d) => {
 		population: +d.S0101_C01_001E,
 		income: +d.S1901_C01_012E,
 		filtered: false,
-		median_commute: d.S0801_C01_046E,
-		percent_no_computer: d.S2801_C02_011E,
-		unemployment_rate: d.S2301_C04_001E,
+		median_commute: +d.S0801_C01_046E,
+		percent_no_computer: +d.S2801_C02_011E,
+		unemployment_rate: +d.S2301_C04_001E,
 		fips: fips
 	};
-	let data2 = {
-		population: +d.S0101_C01_001E,
-		fips: fips
-	};
+
 	data_obj[fips] = data;
-	data_array.push(data2);
+	data_array.push(data);
 }));
 
 function colorize(min, max, value) {
 	let bins = 5;
 	let increment = (max - min) / bins;
-
-	if (value <= min + increment) { return '#eff3ff' } // includes lower outliers
-	if (value <= min + (increment * 2)) { return '#bdd7e7' }
-	if (value <= min + (increment * 3)) { return '#6baed6' }
-	if (value <= min + (increment * 4)) { return '#3182bd' }
+	// colors from ColorBrewer
+	if (value <= min + increment) { return '#eff3ff' }; // includes lower outliers
+	if (value <= min + (increment * 2)) { return '#bdd7e7' };
+	if (value <= min + (increment * 3)) { return '#6baed6' };
+	if (value <= min + (increment * 4)) { return '#3182bd' };
 	if (value <= min + (increment * 5) || value >= max) { return '#08519c' } // also captures outliers
 }
 
@@ -102,10 +105,20 @@ function scatterplot() {
 		.append('option')
 		.text(function (d) { return d; }) // text showed in the menu
 		.attr("value", function (d) { return d; }) // corresponding value returned by the button
+		.property("selected", function (d) { return d === selectedOption; })
+
+	button2 = d3.select("#selectButton2")
+		.selectAll('myOptions')
+		.data(choices)
+		.enter()
+		.append('option')
+		.text(function (d) { return d; }) // text showed in the menu
+		.attr("value", function (d) { return d; }) // corresponding value returned by the button
+		.property("selected", function (d) { return d === selectedOption2; })
 
 
 	let x = d3.scaleLinear()
-		.domain(d3.extent(data_array, d => d.population))
+		.domain(d3.extent(data_array, d => d[selectedOption2]))
 		.range([margin.left, width - margin.right]);
 
 	let y = d3.scaleLinear()
@@ -114,21 +127,30 @@ function scatterplot() {
 
 	let xAxis = g => g
 		.attr("transform", `translate(0, ${height - margin.bottom})`)
+		.attr("class", "x axis")
 		.call(d3.axisBottom(x))
 		.call(g => g.select(".domain").remove())
-		.call(g => g.append("text")
-			.attr("x", width - margin.right)
-			.attr("y", -4)
-			.attr("fill", "#000")
-			.attr("font-weight", "bold")
-			.attr("text-anchor", "end")
-			.text("Population"));
+	// .call(g => g.append("text")
+	// 	.attr("x", width - margin.right)
+	// 	.attr("y", -4)
+	// 	.attr("fill", "#000")
+	// 	.attr("font-weight", "bold")
+	// 	.attr("text-anchor", "end")
+	// 	.text(`${selectedOption2}`));
 
 	let yAxis = g => g
 		.attr("transform", `translate(${margin.left},0)`)
 		.attr("class", "y axis")
 		.call(d3.axisLeft(y))
-	// .call(g => g.select(".domain").remove())
+		.call(g => g.select(".domain").remove())
+	// .call(g => g.append("text")
+	// 	.attr("x", width - margin.right)
+	// 	.attr("y", -4)
+	// 	.attr("fill", "#000")
+	// 	.attr("font-weight", "bold")
+	// 	.attr("text-anchor", "end")
+	// 	.text(`${selectedOption}`));
+
 
 	scatter_svg = d3.select('#scatterplot')
 		.append('svg')
@@ -142,6 +164,15 @@ function scatterplot() {
 		.append('g');
 	// .attr('transform', `translate(${margin.left}, ${margin.top})`);
 
+
+	// Add a clipPath: everything out of this area won't be drawn.
+	var clip = scatter_svg.append("defs").append("svg:clipPath")
+		.attr("id", "clip")
+		.append("svg:rect")
+		.attr("width", width)
+		.attr("height", height)
+		.attr("x", 0)
+		.attr("y", 0);
 
 	const brush = d3.brush()
 		.on("start brush end", brushed);
@@ -160,28 +191,34 @@ function scatterplot() {
 		.enter()
 		.append("circle")
 		.attr("class", "point")
-		.attr("transform", d => `translate(${x(d.population)},${y(d[selectedOption])})`)
+		.attr("transform", d => `translate(${x(d[selectedOption2])},${y(d[selectedOption])})`)
 		.attr("r", 2.5)
 		.attr("fill-opacity", 0.5);
 
-	scatter_svg.call(brush);
+	scatter_svg
+		.append("g")
+		.attr("class", "brush").call(brush);
 
 	function brushed() {
-
+		let clearing = true;
 		if (d3.event.selection) {
 			const [
 				[x0, y0],
 				[x1, y1]
 			] = d3.event.selection;
 
-			let clearing = false;
+
 			// if the brush doesn't contain anything, reset the filtered
 			if (x0 === x1 || y0 === y1) {
 				clearing = true;
+				show_all = true;
+			} else {
+				show_all = false;
+				clearing = false;
 			}
 
 			data_array.forEach((d, i) => {
-				let val = x0 <= x(d.population) && x(d.population) < x1 && y0 <= y(d[selectedOption]) && y(d[selectedOption]) < y1;
+				let val = x0 <= x(d[selectedOption2]) && x(d[selectedOption2]) < x1 && y0 <= y(d[selectedOption]) && y(d[selectedOption]) < y1;
 				// if there was no selection, reset and show all
 				if (clearing) {
 					data_obj[d.fips].filtered = false;
@@ -193,6 +230,16 @@ function scatterplot() {
 					data_obj[d.fips].filtered = true;
 				}
 			});
+
+		} else {
+			show_all = true;
+			data_array.forEach((d, i) => {
+				// if there was no selection, reset and show all
+				if (clearing) {
+					data_obj[d.fips].filtered = false;
+					return;
+				}
+			});
 		}
 		// show on the map the selected counties
 		map_svg.selectAll('path')
@@ -200,10 +247,14 @@ function scatterplot() {
 			.style('fill', (d) => {
 				let fips = String(d.properties.STATEFP) + String(d.properties.COUNTYFP);
 				let { filtered } = data_obj[fips];
-				let value = data_obj[fips][selectedOption] || data_obj[fips].population;
+				let value = data_obj[fips][selectedOption];
 				// console.log(value);
-				// return filtered ? '#EEEEEE' : colorize(d3.min(data_array, d => d[selectedOption]), d3.max(data_array, d => d[selectedOption]), value);
-				return filtered ? '#EEEEEE' : '#CD6F6F';
+				if (show_all) {
+					return filtered ? '#EEEEEE' : colorize(d3.min(data_array, d => d[selectedOption]), d3.max(data_array, d => d[selectedOption]), value);
+				} else {
+					return filtered ? '#EEEEEE' : '#CD6F6F';
+
+				}
 			});
 
 		scatter_svg.selectAll('circle')
@@ -213,8 +264,13 @@ function scatterplot() {
 
 	function update() {
 		// Create new data with the selection?
-		data_array = data_array.map(function (d) { return { population: d.population, [selectedOption]: data_obj[d.fips][selectedOption], fips: d.fips } })
-		// console.log(data_array)
+		data_array = data_array.map(function (d) {
+			return {
+				[selectedOption2]: data_obj[d.fips][selectedOption2],
+				[selectedOption]: data_obj[d.fips][selectedOption],
+				fips: d.fips
+			};
+		});
 
 		y = d3.scaleLinear()
 			.domain(d3.extent(data_array, d => d[selectedOption])).nice()
@@ -223,29 +279,44 @@ function scatterplot() {
 		yAxis = g => g
 			.attr("transform", `translate(${margin.left},0)`)
 			.attr("class", "y axis")
-			.call(d3.axisLeft(y));
+			.call(d3.axisLeft(y))
+			.call(g => g.select(".domain").remove())
+		// .call(g => g.append("text")
+		// 	.attr("x", width - margin.right)
+		// 	.attr("y", -4)
+		// 	.attr("fill", "#000")
+		// 	.attr("font-weight", "bold")
+		// 	.attr("text-anchor", "end")
+		// 	.text(`${selectedOption}`));
+
 
 		scatter_svg.select(".y")
+			// .transition(t)
 			.call(yAxis);
 
-		// let circle = scatter_svg.selectAll('g')
-		// circle.data(data_array);
-		// circle.exit().remove();
-		// circle.enter().append("circle")
-		// 	.attr("transform", d => `translate(${x(d.population)},${y(d[selectedOption])})`)
-		// 	.attr("r", 2.5)
-		// 	.attr("fill-opacity", 0.5);
+		// update the x axis
+		x = d3.scaleLinear()
+			.domain(d3.extent(data_array, d => d[selectedOption2]))
+			.range([margin.left, width - margin.right]);
 
-		// dot = scatter_svg.append("g")
-		// axisLeft	.attr("fill", "steelblue")
-		// 	.attr("stroke-width", 1)
-		// 	.selectAll("g")
-		// 	.data(dataFilter)
-		// 	.join("circle")
-		// 	.attr("transform", d => `translate(${x(d.population)},${y(d[selectedOption])})`)
-		// 	.attr("r", 2.5)
-		// 	.attr("fill-opacity", 0.5);
+		xAxis = g => g
+			.attr("transform", `translate(0, ${height - margin.bottom})`)
+			.attr("class", "x axis")
+			.call(d3.axisBottom(x))
+			.call(g => g.select(".domain").remove())
+		// .call(g => g.append("text")
+		// 	.attr("x", width - margin.right)
+		// 	.attr("y", -4)
+		// 	.attr("fill", "#000")
+		// 	.attr("font-weight", "bold")
+		// 	.attr("text-anchor", "end")
+		// 	.text(`${selectedOption2}`));
 
+		scatter_svg.select(".x")
+			// .transition(t)
+			.call(xAxis);
+
+		// remove all the old points
 		scatter_svg.selectAll('g').selectAll('.point').remove();
 
 		dot = scatter_svg.append("g")
@@ -256,31 +327,32 @@ function scatterplot() {
 			.enter()
 			.append("circle")
 			.attr("class", "point")
-			.attr("transform", d => `translate(${x(d.population)},${y(d[selectedOption])})`)
+			.attr("transform", d => `translate(${x(d[selectedOption2])},${y(d[selectedOption])})`)
 			.attr("r", 2.5)
 			.attr("fill-opacity", 0.5);
 
 
 
 		// update the map
-		map_svg.append("g")
-			.selectAll("path")
-			.data(geo.features).exit().remove()
-			.enter()
-			.append("path")
-			// draw each county
-			.attr("d", d3.geoPath()
-				.projection(projection)
-			)
-			// // set the color of each county
-			.attr("fill", (d) => {
+		map_svg.selectAll('path')
+			.data(geo.features)
+			.style('fill', (d) => {
 				let fips = String(d.properties.STATEFP) + String(d.properties.COUNTYFP);
-				return colorize(d3.min(data_array, d => d[selectedOption]), d3.max(data_array, d => d[selectedOption]), data_obj[fips][selectedOption]);
-			})
-			.style("stroke", "white")
-			.style("stroke-width", 0.5)
-			.attr("class", d => "county")
-			.style("opacity", .8);
+				let { filtered } = data_obj[fips];
+				let value = data_obj[fips][selectedOption];
+				// console.log(value);
+				if (show_all) {
+					return filtered ? '#EEEEEE' : colorize(d3.min(data_array, d => d[selectedOption]), d3.max(data_array, d => d[selectedOption]), value);
+				} else {
+					return filtered ? '#EEEEEE' : '#CD6F6F';
+
+				}
+			});
+
+		// map_svg.append("g")
+		// 	.selectAll("path").exit().remove()
+		brushed();
+		scatter_svg.select(".brush").call(brush.move, null) // This remove the grey brush area as soon as the selection has been done
 	}
 
 	// When the button is changed, run the updateChart function
@@ -288,7 +360,13 @@ function scatterplot() {
 		// recover the option that has been chosen
 		selectedOption = d3.select(this).property("value")
 		// run the updateChart function with this selected option
-		update(selectedOption);
+		update();
+	});
+	d3.select("#selectButton2").on("change", function (d) {
+		// recover the option that has been chosen
+		selectedOption2 = d3.select(this).property("value")
+		// run the updateChart function with this selected option
+		update();
 	});
 }
 

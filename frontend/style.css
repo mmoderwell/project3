@@ -22,15 +22,44 @@ body {
 }
 
 #chloropleth {
-	margin: 1em 0;
+	margin: 2em 0;
 	background: #f6f6f6;
 	border-radius: 6px;
 	box-shadow: 6px 2px 18px 6px rgba(158, 158, 158, 0.3);
 }
 
 #scatterplot {
-	margin: 2em 0;
+	margin: 8px 0;
 	background: #fafafa;
 	border-radius: 4px;
 	padding: 2em 2em 0 2em;
+}
+
+/* Custom dropdown */
+.custom-dropdown {
+	position: relative;
+	display: inline-block;
+	vertical-align: middle;
+}
+
+.custom-dropdown select {
+	background-color: #4581b3;
+	color: #fff;
+	font-size: inherit;
+	padding: .5em;
+	padding-right: 1em;
+	border: 0;
+	margin: 0;
+	border-radius: 3px;
+	text-indent: 0.01px;
+	text-overflow: '';
+}
+
+.custom-dropdown::after {
+	/*  Custom dropdown arrow */
+	display: none;
+}
+
+.x_drop {
+	text-align: right;
 }

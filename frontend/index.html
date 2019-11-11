@@ -15,14 +15,24 @@
 <body>
 	<div class="container">
 		<h1 style="margin: 2em 0 0 0">Interactive U.S. County Map</h1>
-		<p id="subtitle">Understand where counties of a certain combination of population and income are located.</p>
+		<p id="subtitle">Understand where counties of a certain combination of two demographic variables are located.</p>
 		<p>Project 3 for CS 396, by Matt Moderwell & Marco Radaelli<br>
 			<b>See the</b> <a href="" title="">code</a>
 		</p>
 		<!-- Create an element where the map will take place -->
 		<div id="chloropleth" width="800" height="600"></div>
+		<span class="custom-dropdown big">
+			<select id="selectButton"></select>
+		</span>
+		<p>Map coloring reflects this variable</p>
 		<div id="scatterplot"></div>
-		<select id="selectButton"></select>
+		<div class="x_drop">
+			<span class="custom-dropdown big">
+				<select id="selectButton2"></select>
+			</span>
+		</div>
 	</div>
+	<br>
+	<br>
 	<script src="/main.js" type="text/javascript"></script>
 </body>
